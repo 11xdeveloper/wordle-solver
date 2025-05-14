@@ -8,6 +8,16 @@
 #define TILE_SIZE 64
 #define SPACING 10
 
+std::string toUpperCase(std::string word) {
+	std::string upperCase;
+
+	for (char c : word) {
+		upperCase += std::toupper(c);
+	}
+
+	return upperCase;
+}
+
 int main()
 {
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -30,6 +40,9 @@ int main()
 
 	std::cout << "Answer: " << word << std::endl;
 
+	std::string guesses[6] = {"tests", "to"};
+	int currentRow = 2;
+
 	// Taken from official game
 	const Color textColor = GetColor(0xf8f8f8ff);
 	const Color bgColor = GetColor(0x121213ff);
@@ -48,10 +61,25 @@ int main()
 		ClearBackground(bgColor);
 
 		for (int i = 0; i < 6; i++) {
+			std::string text;
+
+			if (i < currentRow) {
+				text = toUpperCase(guesses[i]);
+			}
+
 			for (int j = 0; j < 5; j++) {
 				Rectangle rect = { j * TILE_SIZE + SPACING * (j + 1), i * TILE_SIZE + SPACING * (i + 1), TILE_SIZE, TILE_SIZE };
 
 				DrawRectangleLinesEx(rect, 2, absentColor);
+
+				if (j < text.length()) {
+					std::string temp = text.substr(j, 1);
+					const char* letter = temp.c_str();
+
+					Vector2 offset = MeasureTextEx(font, letter, TILE_SIZE * 0.75, 0);
+
+					DrawTextEx(font, letter, { rect.x + TILE_SIZE / 2 - offset.x / 2 , rect.y + TILE_SIZE / 2 - offset.y / 2 }, TILE_SIZE * 0.75, 0, textColor);
+				}
 			}
 		}
 
