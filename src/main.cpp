@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 
 #include "raylib.h"
 #include "WordLoader.h"
@@ -35,6 +36,12 @@ int main()
 	const std::string word = selectRandomWord(possibleAnswers);
 
 	std::cout << "Answer: " << word << std::endl;
+
+	std::unordered_map<char, int> freq = {};
+
+	for (char c : word) {
+		freq[c]++;
+	}
 
 	std::string input;
 	Guess guesses[6] = {};
@@ -76,13 +83,16 @@ int main()
 			Guess* guess = &guesses[currentRow];
 			guess->value = input;
 
+			auto freqCopy = freq;
+
 			for (int i = 0; i < 5; i++)
 			{
 				if (input[i] == word[i])
 				{
 					guess->results[i] = CharacterResult::CORRECT;
+					freqCopy[input[i]]--;
 				}
-				else if (word.find(input[i]) != std::string::npos)
+				else if (word.find(input[i]) != std::string::npos && freqCopy[input[i]] != 0)
 				{
 					guess->results[i] = CharacterResult::PRESENT;
 				}
