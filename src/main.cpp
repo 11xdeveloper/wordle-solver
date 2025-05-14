@@ -26,8 +26,9 @@ int main()
 
 	std::cout << "Answer: " << word << std::endl;
 
-	std::string guesses[6] = {"tests", "to"};
-	int currentRow = 2;
+	std::string input;
+	std::string guesses[6] = {};
+	int currentRow = 0;
 
 	// Taken from official game
 	const Color textColor = GetColor(0xf8f8f8ff);
@@ -46,11 +47,34 @@ int main()
 
 		ClearBackground(bgColor);
 
+		int key = GetCharPressed();
+		int inputLength = input.length();
+
+		// a-z, A-Z
+		if (((key >= 65 && key <= 90) || (key >= 97 && key <= 122)) && (inputLength < 5))
+		{
+			input.push_back(std::tolower(key));
+		}
+
+		if (IsKeyPressed(KEY_BACKSPACE) && inputLength > 0)
+		{
+			input.pop_back();
+		}
+		
+		if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6)
+		{
+			guesses[currentRow] = input;
+			input = "";
+			currentRow++;
+		}
+
 		for (int i = 0; i < 6; i++) {
 			std::string text;
 
 			if (i < currentRow) {
 				text = toUpperCase(guesses[i]);
+			} else if (i == currentRow) {
+				text = toUpperCase(input);
 			}
 
 			for (int j = 0; j < 5; j++) {
