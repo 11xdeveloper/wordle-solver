@@ -4,9 +4,19 @@
 #include "WordLoader.h"
 #include "Utils.h"
 
-
 #define TILE_SIZE 64
 #define SPACING 10
+
+enum class CharacterResult {
+	ABSENT,
+	PRESENT,
+	CORRECT
+};
+
+struct Guess {
+	std::string value;
+	CharacterResult results[5];
+};
 
 int main()
 {
@@ -27,7 +37,7 @@ int main()
 	std::cout << "Answer: " << word << std::endl;
 
 	std::string input;
-	std::string guesses[6] = {};
+	Guess guesses[6] = {};
 	int currentRow = 0;
 
 	// Taken from official game
@@ -61,18 +71,38 @@ int main()
 			input.pop_back();
 		}
 		
-		if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6)
+		if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6 && std::find(allowedGuesses.begin(), allowedGuesses.end(), input) != allowedGuesses.end())
 		{
-			guesses[currentRow] = input;
+			Guess* guess = &guesses[currentRow];
+			guess->value = input;
+
+			for (int i = 0; i < 5; i++)
+			{
+				if (input[i] == word[i])
+				{
+					guess->results[i] = CharacterResult::CORRECT;
+				}
+				else if (word.find(input[i]) != std::string::npos)
+				{
+					guess->results[i] = CharacterResult::PRESENT;
+				}
+				else
+				{
+					guess->results[i] = CharacterResult::ABSENT;
+				}
+			}
+
 			input = "";
 			currentRow++;
 		}
 
 		for (int i = 0; i < 6; i++) {
 			std::string text;
+			Guess* guess = nullptr;
 
 			if (i < currentRow) {
-				text = toUpperCase(guesses[i]);
+				guess = &guesses[i];
+				text = toUpperCase(guess->value);
 			} else if (i == currentRow) {
 				text = toUpperCase(input);
 			}
@@ -83,6 +113,27 @@ int main()
 				DrawRectangleLinesEx(rect, 2, absentColor);
 
 				if (j < text.length()) {
+					if (i < currentRow) {
+						Color col = absentColor;
+
+						switch (guess->results[j])
+						{
+						case CharacterResult::CORRECT:
+							col = correctColor;
+							break;
+						case CharacterResult::PRESENT:
+							col = presentColor;
+							break;
+						case CharacterResult::ABSENT:
+							col = absentColor;
+							break;
+						default:
+							break;
+						}
+
+						DrawRectangleRec(rect, col);
+					}
+
 					std::string temp = text.substr(j, 1);
 					const char* letter = temp.c_str();
 
