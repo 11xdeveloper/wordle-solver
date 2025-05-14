@@ -1,4 +1,6 @@
 #include <iostream>
+#include <random>
+#include <chrono>
 
 #include "raylib.h"
 #include "WordLoader.h"
@@ -19,6 +21,14 @@ int main()
 
 	std::cout << "Possible Answers: " << possibleAnswers.size() << std::endl;
 	std::cout << "Allowed Guesses: " << allowedGuesses.size() << std::endl;
+
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::mt19937 generator(seed);
+	std::uniform_int_distribution<size_t> distribution(0, possibleAnswers.size() - 1);
+
+	const std::string word = possibleAnswers[distribution(generator)];
+
+	std::cout << "Answer: " << word << std::endl;
 
 	// Taken from official game
 	const Color textColor = GetColor(0xf8f8f8ff);
