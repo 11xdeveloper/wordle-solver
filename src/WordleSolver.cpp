@@ -11,6 +11,8 @@ WordleSolver::WordleSolver(const std::vector<std::string>&words) {
 }
 
 void WordleSolver::addGuess(const Guess& guess) {
+	int countThisGuess[26] = {};
+
 	for (int i = 0; i < 5; i++) {
 		char ch = guess.word[i];
 		Result r = guess.results[i];
@@ -22,11 +24,11 @@ void WordleSolver::addGuess(const Guess& guess) {
 			}
 
 			allowed[i][idx] = true;
-			requiredCount[idx]++;
+			countThisGuess[idx]++;
 		}
 		else if (r == PRESENT) {
 			allowed[i][idx] = false;
-			requiredCount[idx]++;
+			countThisGuess[idx]++;
 		}
 		else {
 			allowed[i][idx] = false;
@@ -44,6 +46,10 @@ void WordleSolver::addGuess(const Guess& guess) {
 				absent[idx] = true;
 			}
 		}
+	}
+
+	for (int c = 0; c < 26; c++) {
+		requiredCount[c] = std::max(requiredCount[c], countThisGuess[c]);
 	}
 
 	std::vector<std::string> newSolutions;
