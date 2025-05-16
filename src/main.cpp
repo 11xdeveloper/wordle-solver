@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "raylib.h"
 #include "WordleSolver.h"
 #include "Utils.h"
@@ -38,8 +40,9 @@ int main()
 	WordleSolver solver(words);
 
 	GameState gameState = GameState::PLAYING;
+	Vector2 mousePosition = { 0, 0 };
 
-	Guess input;
+	Guess input = {};
 	Guess guesses[6] = {};
 	int currentRow = 0;
 
@@ -53,6 +56,8 @@ int main()
 			BeginDrawing();
 
 			ClearBackground(bgColor);
+
+			mousePosition = GetMousePosition();
 
 			int key = GetCharPressed();
 			int inputLength = input.word.length();
@@ -68,45 +73,65 @@ int main()
 				input.word.pop_back();
 			}
 
-			if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6 && std::find(words.begin(), words.end(), input) != words.end())
+			if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6 && std::find(words.begin(), words.end(), input.word) != words.end())
 			{
+				bool valid = true;
+
+				for (auto& r : input.results) {
+					if (r == Result::PENDING) {
+						valid = false;
+						break;
+					}
+				}
+
+				if (valid) {
+					guesses[currentRow] = input;
+					input = {};
+					currentRow++;
+				}
 			}
 
 			for (int i = 0; i < 6; i++) {
-				std::string text;
-				Guess* guess = nullptr;
-
-				if (i < currentRow) {
-					guess = &guesses[i];
-					text = toUpperCase(guess->word);
-				}
-				else if (i == currentRow) {
-					text = toUpperCase(input.word);
-				}
+				Guess& guess = i == currentRow ? input : guesses[i];
 
 				for (int j = 0; j < 5; j++) {
 					Rectangle rect = { j * TILE_SIZE + SPACING * (j + 1), i * TILE_SIZE + SPACING * (i + 1), TILE_SIZE, TILE_SIZE };
 
+					// Input tile clicked
+					if (i == currentRow && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mousePosition.x > rect.x && mousePosition.x < rect.x + rect.width) {
+						Result& r = guess.results[j];
+
+						std::cout << r << std::endl;
+
+						if (r == Result::ABSENT) {
+							r = Result::PRESENT;
+						}
+						else if (r == Result::PRESENT) {
+							r = Result::CORRECT;
+						}
+						else {
+							r = Result::ABSENT;
+						}
+					}
+
+					Result& r = guess.results[j];
+
+					if (r == Result::CORRECT) {
+						DrawRectangleRec(rect, correctColor);
+					}
+					else if (r == Result::PRESENT) {
+						DrawRectangleRec(rect, presentColor);
+					}
+					else if (r == Result::ABSENT) {
+						DrawRectangleRec(rect, absentColor);
+					}
+
 					DrawRectangleLinesEx(rect, 2, absentColor);
 
-					if (j < text.length()) {
-						std::string temp = text.substr(j, 1);
+					if (j < guess.word.length()) {
+						std::string temp = guess.word.substr(j, 1);
 						const char* letter = temp.c_str();
 						char lower = tolower(letter[0]);
-
-						if (i < currentRow) {
-							Color col = absentColor;
-							Result r = guess->results[j];
-
-							if (r == Result::CORRECT) {
-								col = correctColor;
-							}
-							else if (r == Result::PRESENT) {
-								col = presentColor;
-							}
-
-							DrawRectangleRec(rect, col);
-						}
 
 						Vector2 offset = MeasureTextEx(font, letter, TILE_SIZE * 0.75, 0);
 

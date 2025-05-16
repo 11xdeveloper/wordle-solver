@@ -5,9 +5,10 @@
 
 
 enum Result {
+	PENDING,
 	ABSENT,
 	PRESENT,
-	CORRECT
+	CORRECT,
 };
 
 struct Guess {
