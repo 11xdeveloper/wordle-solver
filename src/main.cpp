@@ -2,7 +2,6 @@
 #include <unordered_map>
 
 #include "raylib.h"
-#include "WordLoader.h"
 #include "Utils.h"
 
 enum class CharacterResult {
@@ -45,9 +44,14 @@ int main()
 	const Font font = GetFontDefault();
 
 
-	std::vector<std::string> possibleAnswers = loadWordFile("resources/possible_answers.txt");
-	std::vector<std::string> allowedGuesses = loadWordFile("resources/allowed_guesses.txt");
+	std::vector<std::string> possibleAnswers;
+	possibleAnswers.reserve(2315);
 
+	std::vector<std::string> allowedGuesses;
+	allowedGuesses.reserve(12972);
+
+	loadFile(possibleAnswers, "resources/possible_answers.txt");
+	loadFile(allowedGuesses, "resources/allowed_guesses.txt");
 
 	std::cout << "Possible Answers: " << possibleAnswers.size() << std::endl;
 	std::cout << "Allowed Guesses: " << allowedGuesses.size() << std::endl;
