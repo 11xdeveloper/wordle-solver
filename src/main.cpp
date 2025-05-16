@@ -149,39 +149,39 @@ int main()
 					text = toUpperCase(input);
 				}
 
+				auto freqCopy = freq;
+
 				for (int j = 0; j < 5; j++) {
 					Rectangle rect = { j * TILE_SIZE + SPACING * (j + 1), i * TILE_SIZE + SPACING * (i + 1), TILE_SIZE, TILE_SIZE };
 
 					DrawRectangleLinesEx(rect, 2, absentColor);
 
 					if (j < text.length()) {
+						std::string temp = text.substr(j, 1);
+						const char* letter = temp.c_str();
+						char lower = tolower(letter[0]);
+
 						if (i < currentRow) {
 							Color col = absentColor;
+							CharacterResult r = guess->results[j];
 
-							switch (guess->results[j])
-							{
-							case CharacterResult::CORRECT:
+							if (r == CharacterResult::CORRECT && freqCopy[lower] > 0) {
 								col = correctColor;
-								break;
-							case CharacterResult::PRESENT:
+								freqCopy[lower]--;
+							}
+							else if (r == CharacterResult::PRESENT && freqCopy[lower] > 0) {
 								col = presentColor;
-								break;
-							case CharacterResult::ABSENT:
-								col = absentColor;
-								break;
-							default:
-								break;
+								freqCopy[lower]--;
 							}
 
 							DrawRectangleRec(rect, col);
-						}
 
-						std::string temp = text.substr(j, 1);
-						const char* letter = temp.c_str();
+						}
 
 						Vector2 offset = MeasureTextEx(font, letter, TILE_SIZE * 0.75, 0);
 
 						DrawTextEx(font, letter, { rect.x + TILE_SIZE / 2 - offset.x / 2 , rect.y + TILE_SIZE / 2 - offset.y / 2 }, TILE_SIZE * 0.75, 0, textColor);
+
 					}
 				}
 			}
