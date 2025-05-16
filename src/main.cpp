@@ -1,19 +1,6 @@
-#include <iostream>
-#include <unordered_map>
-
 #include "raylib.h"
+#include "WordleSolver.h"
 #include "Utils.h"
-
-enum class CharacterResult {
-	ABSENT,
-	PRESENT,
-	CORRECT
-};
-
-struct Guess {
-	std::string value;
-	CharacterResult results[5];
-};
 
 enum class GameState {
 	PLAYING,
@@ -43,32 +30,16 @@ int main()
 
 	const Font font = GetFontDefault();
 
+	std::vector<std::string> words;
+	words.reserve(12972);
 
-	std::vector<std::string> possibleAnswers;
-	possibleAnswers.reserve(2315);
+	loadFile(words, "resources/allowed_guesses.txt");
 
-	std::vector<std::string> allowedGuesses;
-	allowedGuesses.reserve(12972);
-
-	loadFile(possibleAnswers, "resources/possible_answers.txt");
-	loadFile(allowedGuesses, "resources/allowed_guesses.txt");
-
-	std::cout << "Possible Answers: " << possibleAnswers.size() << std::endl;
-	std::cout << "Allowed Guesses: " << allowedGuesses.size() << std::endl;
-
-	const std::string word = selectRandomWord(possibleAnswers);
-
-	std::cout << "Answer: " << word << std::endl;
-
-	std::unordered_map<char, int> freq = {};
-
-	for (char c : word) {
-		freq[c]++;
-	}
+	WordleSolver solver(words);
 
 	GameState gameState = GameState::PLAYING;
 
-	std::string input;
+	Guess input;
 	Guess guesses[6] = {};
 	int currentRow = 0;
 
@@ -84,57 +55,21 @@ int main()
 			ClearBackground(bgColor);
 
 			int key = GetCharPressed();
-			int inputLength = input.length();
+			int inputLength = input.word.length();
 
 			// a-z, A-Z
 			if (((key >= 65 && key <= 90) || (key >= 97 && key <= 122)) && (inputLength < 5))
 			{
-				input.push_back(std::tolower(key));
+				input.word.push_back(std::tolower(key));
 			}
 
 			if (IsKeyPressed(KEY_BACKSPACE) && inputLength > 0)
 			{
-				input.pop_back();
+				input.word.pop_back();
 			}
 
-			if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6 && std::find(allowedGuesses.begin(), allowedGuesses.end(), input) != allowedGuesses.end())
+			if (IsKeyPressed(KEY_ENTER) && inputLength == 5 && currentRow < 6 && std::find(words.begin(), words.end(), input) != words.end())
 			{
-				Guess* guess = &guesses[currentRow];
-				guess->value = input;
-
-				int correct = 0;
-				auto freqCopy = freq;
-
-				for (int i = 0; i < 5; i++)
-				{
-					if (input[i] == word[i])
-					{
-						guess->results[i] = CharacterResult::CORRECT;
-						correct++;
-						freqCopy[input[i]]--;
-					}
-					else if (word.find(input[i]) != std::string::npos && freqCopy[input[i]] != 0)
-					{
-						guess->results[i] = CharacterResult::PRESENT;
-					}
-					else
-					{
-						guess->results[i] = CharacterResult::ABSENT;
-					}
-				}
-
-				if (correct == 5) {
-					gameState = GameState::WON;
-					continue;
-				}
-
-				if (currentRow == 5) {
-					gameState = GameState::LOST;
-					continue;
-				}
-
-				input = "";
-				currentRow++;
 			}
 
 			for (int i = 0; i < 6; i++) {
@@ -143,13 +78,11 @@ int main()
 
 				if (i < currentRow) {
 					guess = &guesses[i];
-					text = toUpperCase(guess->value);
+					text = toUpperCase(guess->word);
 				}
 				else if (i == currentRow) {
-					text = toUpperCase(input);
+					text = toUpperCase(input.word);
 				}
-
-				auto freqCopy = freq;
 
 				for (int j = 0; j < 5; j++) {
 					Rectangle rect = { j * TILE_SIZE + SPACING * (j + 1), i * TILE_SIZE + SPACING * (i + 1), TILE_SIZE, TILE_SIZE };
@@ -163,19 +96,16 @@ int main()
 
 						if (i < currentRow) {
 							Color col = absentColor;
-							CharacterResult r = guess->results[j];
+							Result r = guess->results[j];
 
-							if (r == CharacterResult::CORRECT && freqCopy[lower] > 0) {
+							if (r == Result::CORRECT) {
 								col = correctColor;
-								freqCopy[lower]--;
 							}
-							else if (r == CharacterResult::PRESENT && freqCopy[lower] > 0) {
+							else if (r == Result::PRESENT) {
 								col = presentColor;
-								freqCopy[lower]--;
 							}
 
 							DrawRectangleRec(rect, col);
-
 						}
 
 						Vector2 offset = MeasureTextEx(font, letter, TILE_SIZE * 0.75, 0);
