@@ -1,6 +1,6 @@
 #include "WordleSolver.h"
 
-WordleSolver::WordleSolver(const std::vector<std::string>&words) {
+WordleSolver::WordleSolver(const std::vector<std::string>& words) {
 	for (int i = 0; i < 5; i++) {
 		for (int c = 0; c < 26; c++) {
 			allowed[i][c] = true;
@@ -94,11 +94,10 @@ void WordleSolver::addGuess(const Guess& guess) {
 	}
 
 	solutions = std::move(newSolutions);
-
 }
 
-std::unordered_map<std::string, double> WordleSolver::getNextGuesses() {
-	std::unordered_map<std::string, double> wordEntropyMap;
+std::vector<std::pair<std::string, double>> WordleSolver::getNextGuesses() {
+	std::vector<std::pair<std::string, double>> wordEntropyPairs;
 
 	int n = solutions.size();
 	std::vector<int> counts(243);
@@ -108,7 +107,7 @@ std::unordered_map<std::string, double> WordleSolver::getNextGuesses() {
 
 		for (const auto& solutionWord : solutions) {
 			int letterCount[26] = {};
-			Result feedback[5];
+			Result feedback[5] = {};
 
 			for (int i = 0; i < 5; ++i) {
 				if (guessWord[i] == solutionWord[i]) {
@@ -123,6 +122,7 @@ std::unordered_map<std::string, double> WordleSolver::getNextGuesses() {
 			for (int i = 0; i < 5; ++i) {
 				if (feedback[i] == ABSENT) {
 					int idx = guessWord[i] - 'a';
+
 					if (letterCount[idx] > 0) {
 						feedback[i] = PRESENT;
 						letterCount[idx]--;
@@ -150,8 +150,13 @@ std::unordered_map<std::string, double> WordleSolver::getNextGuesses() {
 			}
 		}
 
-		wordEntropyMap[guessWord] = entropy;
+		wordEntropyPairs.emplace_back(guessWord, entropy);
 	}
 
-	return wordEntropyMap;
+	std::sort(wordEntropyPairs.begin(), wordEntropyPairs.end(), [](const auto& a, const auto& b) {
+		return a.second > b.second;
+		});
+
+
+	return wordEntropyPairs;
 }

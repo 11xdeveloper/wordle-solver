@@ -2,13 +2,14 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 
 enum Result {
-	PENDING,
 	ABSENT,
 	PRESENT,
 	CORRECT,
+	PENDING
 };
 
 struct Guess {
@@ -29,5 +30,5 @@ public:
 	WordleSolver(const std::vector<std::string>& words);
 
 	void addGuess(const Guess& guess);
-	std::unordered_map<std::string, double> getNextGuesses();
+	std::vector<std::pair<std::string, double>> getNextGuesses();
 };
