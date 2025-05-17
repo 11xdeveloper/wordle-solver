@@ -67,7 +67,7 @@ int main()
 		mousePosition = GetMousePosition();
 
 		int key = GetCharPressed();
-		int inputLength = input.length();
+		size_t inputLength = input.length();
 
 		// a-z, A-Z
 		if (((key >= 65 && key <= 90) || (key >= 97 && key <= 122)) && (inputLength < 5))
@@ -104,7 +104,7 @@ int main()
 				std::fill(std::begin(characterResults), std::end(characterResults), Result::PENDING);
 				currentRow++;
 
-				int guessesNo = nextGuesses.size();
+				size_t guessesNo = nextGuesses.size();
 				for (int i = 0; i < 10; i++) {
 					if (guessesNo <= i) break;
 					std::cout << "#" << i + 1 << ": " << nextGuesses[i].first << " - " << nextGuesses[i].second << std::endl;
@@ -115,7 +115,7 @@ int main()
 		for (int i = 0; i < 6; i++) {
 			std::string word = i == currentRow ? input : guesses[i].word;
 			for (int j = 0; j < 5; j++) {
-				Rectangle rect = { j * TILE_SIZE + SPACING * (j + 1), i * TILE_SIZE + SPACING * (i + 1), TILE_SIZE, TILE_SIZE };
+				Rectangle rect = { static_cast<float>(j * TILE_SIZE + SPACING * (j + 1)), static_cast<float>(i * TILE_SIZE + SPACING * (i + 1)), TILE_SIZE, TILE_SIZE };
 
 				// Input tile clicked
 				if (i == currentRow && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mousePosition.x > rect.x && mousePosition.x < rect.x + rect.width) {
