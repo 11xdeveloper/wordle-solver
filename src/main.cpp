@@ -103,12 +103,6 @@ int main()
 				input = "";
 				std::fill(std::begin(characterResults), std::end(characterResults), Result::PENDING);
 				currentRow++;
-
-				size_t guessesNo = nextGuesses.size();
-				for (int i = 0; i < 10; i++) {
-					if (guessesNo <= i) break;
-					std::cout << "#" << i + 1 << ": " << nextGuesses[i].first << " - " << nextGuesses[i].second << std::endl;
-				}
 			}
 		}
 
@@ -161,6 +155,15 @@ int main()
 
 				}
 			}
+		}
+
+		DrawTextEx(font, "Best guesses:", { TILES_WIDTH, SPACING * 2 }, 30, 5, textColor);
+
+		for (int i = 0; i < 10; i++) {
+			if (nextGuesses.size() <= i) break;
+
+			std::string text = "#" + std::to_string(i + 1) + ": " + nextGuesses[i].first;
+			DrawTextEx(font, text.c_str(), { TILES_WIDTH, static_cast<float>(SPACING * 2 + (i + 1) * (30 + SPACING / 2)) }, 30, 5, textColor);
 		}
 
 		EndDrawing();
