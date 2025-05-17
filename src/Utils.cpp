@@ -10,12 +10,11 @@ std::string toUpperCase(std::string word) {
 	return upperCase;
 }
 
-std::string selectRandomWord(std::vector<std::string> words) {
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	std::mt19937 generator(seed);
-	std::uniform_int_distribution<size_t> distribution(0, words.size() - 1);
-
-	return words[distribution(generator)];
+std::string round_double_to_string(double value, int precision) {
+	double rounded_value = std::floor(value * std::pow(10, precision) + 0.5) / std::pow(10, precision);
+	std::stringstream ss;
+	ss << std::fixed << std::setprecision(precision) << rounded_value;
+	return ss.str();
 }
 
 void loadFile(std::vector<std::string>& lines, const std::string& filename) {

@@ -167,7 +167,7 @@ int main()
 		for (int i = 0; i < 10; i++) {
 			if (nextGuesses.size() <= i) break;
 
-			std::string text = "#" + std::to_string(i + 1) + ": " + nextGuesses[i].first;
+			std::string text = "#" + std::to_string(i + 1) + ": " + nextGuesses[i].first + " - " + round_double_to_string(nextGuesses[i].second, 2);
 			DrawTextEx(font, text.c_str(), { TILES_WIDTH, static_cast<float>(SPACING * 2 + (i + 1) * (30 + SPACING / 2)) }, 30, 5, textColor);
 		}
 
