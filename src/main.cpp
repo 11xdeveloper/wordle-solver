@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "raylib.h"
 #include "WordleSolver.h"
 #include "Utils.h"
@@ -53,7 +51,18 @@ int main()
 	Result characterResults[5] = { Result::PENDING, Result::PENDING, Result::PENDING, Result::PENDING, Result::PENDING };
 	Vector2 mousePosition = { 0, 0 };
 
-	Guess guesses[6] = {};
+	Guess guesses[6];
+
+	Guess defaultGuess;
+	defaultGuess.word = "";
+	defaultGuess.results[0] = Result::PENDING;
+	defaultGuess.results[1] = Result::PENDING;
+	defaultGuess.results[2] = Result::PENDING;
+	defaultGuess.results[3] = Result::PENDING;
+	defaultGuess.results[4] = Result::PENDING;
+
+	std::fill(std::begin(guesses), std::end(guesses), defaultGuess);
+	
 	int currentRow = 0;
 
 	SetTargetFPS(60);
@@ -88,7 +97,6 @@ int main()
 			bool valid = true;
 
 			for (int i = 0; i < 5; ++i) {
-				std::cout << characterResults[i] << std::endl;
 				if (characterResults[i] == Result::PENDING) {
 					valid = false;
 					break;
@@ -99,6 +107,7 @@ int main()
 
 			if (valid) {
 				solver.addGuess(guess);
+				nextGuesses = solver.getNextGuesses();
 				guesses[currentRow] = guess;
 				input = "";
 				std::fill(std::begin(characterResults), std::end(characterResults), Result::PENDING);
@@ -113,34 +122,30 @@ int main()
 
 				// Input tile clicked
 				if (i == currentRow && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mousePosition.x > rect.x && mousePosition.x < rect.x + rect.width) {
-					Result r;
-					bool isValid = true;
+					Result& r = characterResults[j];
 
-					if (i == currentRow) {
-						if (characterResults[j] == Result::PENDING) {
-							isValid = false;
-						}
-						else {
-							r = characterResults[j];
-						}
+					if (r == Result::ABSENT) {
+						r = Result::PRESENT;
+					}
+					else if (r == Result::PRESENT) {
+						r = Result::CORRECT;
 					}
 					else {
-						r = guesses[i].results[j];
-					}
-
-					if (isValid) {
-						if (r == Result::CORRECT) {
-							DrawRectangleRec(rect, correctColor);
-						}
-						else if (r == Result::PRESENT) {
-							DrawRectangleRec(rect, presentColor);
-						}
-						else if (r == Result::ABSENT) {
-							DrawRectangleRec(rect, absentColor);
-						}
+						r = Result::ABSENT;
 					}
 				}
 
+				Result r = i == currentRow ? characterResults[j] : guesses[i].results[j];
+
+				if (r == Result::CORRECT) {
+					DrawRectangleRec(rect, correctColor);
+				}
+				else if (r == Result::PRESENT) {
+					DrawRectangleRec(rect, presentColor);
+				}
+				else if (r == Result::ABSENT) {
+					DrawRectangleRec(rect, absentColor);
+				}
 
 				DrawRectangleLinesEx(rect, 2, absentColor);
 
